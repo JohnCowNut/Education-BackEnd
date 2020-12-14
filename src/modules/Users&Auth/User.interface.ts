@@ -1,14 +1,16 @@
-
+import mongoose from 'mongoose'
 export enum UserRoles {
     admin,
     user,
     instructors
 }
-export interface User {
+export interface IUser extends mongoose.Document {
+    _id?: string,
     email: string,
     password: string,
-    confirmPassword: string,
-    name: string
-    role: UserRoles
-    createAt: Date
+    nickName: string,
+    confirmPassword?: string,
+    role?: UserRoles,
+    createAt?: Date,
+    correctPassword?(candidatePassword: string): () => Promise<boolean>;
 }

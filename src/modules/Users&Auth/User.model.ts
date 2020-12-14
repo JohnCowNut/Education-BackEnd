@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import { User, UserRoles } from './User.interface'
+import { IUser, UserRoles } from './User.interface'
+import bcrypt from 'bcrypt'
 // interface
 const userSchema: mongoose.Schema = new mongoose.Schema({
     email: {
@@ -14,7 +15,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     },
     confirmPassword: {
         type: String,
-        required: true,
+
         minlength: 6,
         validate: {
             // This only works CREATE on SAVE !!
@@ -31,7 +32,6 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     },
     role: {
         type: UserRoles,
-        required: true,
         default: 'user'
     },
     createAt: {
@@ -53,6 +53,18 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     ],
 });
 
-const User = mongoose.model<User & mongoose.Document>("User", userSchema);
+userSchema.pre<IUser>('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password, 12);
+    this.confirmPassword = undefined;
+    return next();
+})
+
+userSchema.methods.correctPassword = async function (candidatePassword: string,
+    userPassword: string) {
+    return await bcrypt.compare(candidatePassword, userPassword)
+}
+
+const User = mongoose.model<IUser & mongoose.Document>("User", userSchema);
 
 export default User;
