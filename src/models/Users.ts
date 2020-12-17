@@ -32,6 +32,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
         unique: true,
         minlength: 5
     },
+
     role: {
         type: String,
         enum: ['user', 'instructors', 'admin'],
@@ -54,6 +55,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
             ref: "Course",
         },
     ],
+    passwordChangedAt: Date
 });
 
 userSchema.pre<IUser>('save', async function (next) {
@@ -67,6 +69,16 @@ userSchema.methods.correctPassword = async function (candidatePassword: string,
     userPassword: string) {
     return await bcrypt.compare(candidatePassword, userPassword)
 }
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp: string) {
+    if (this.passwordChangedAt) {
+        const changedTimestamp = parseInt(
+            `${this.passwordChangedAt.getTime() / 1000}`,
+            10
+        );
+        return +JWTTimestamp < changedTimestamp;
+    }
+    return false;
+};
 
 const User = mongoose.model<IUser & mongoose.Document>("User", userSchema);
 

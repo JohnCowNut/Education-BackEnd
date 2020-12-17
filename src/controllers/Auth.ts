@@ -1,3 +1,4 @@
+import { DecodeProtected } from './../types/Auth.interface';
 
 import { IUser } from '../types/User.interface';
 import { Response, NextFunction, Request } from 'express';
@@ -7,7 +8,7 @@ import { Register, Login } from '../types/Auth.interface';
 import status from 'http-status'
 import AppError from '../utils/AppError';
 import CatchAsync from '../utils/CatchAsync';
-
+import { promisify } from 'util';
 const signToken = (id: string) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
@@ -53,4 +54,44 @@ export const login = CatchAsync(async (req: Request, res: Response, next: NextFu
         return next(new AppError('Incorrect email or password', +status[401]))
     }
     return createSendToken(user, status.CREATED, res);
+})
+
+/// type for user ============================================@params: {u}
+export const protectedAuth = CatchAsync(async (req: Request & { user: object }, _: Response, next: NextFunction) => {
+    // 1) getting token and check of it's there
+    let token;
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    // check token 
+    if (!token) {
+        return next(
+            new AppError('Your are not logged in! Please log in to get access. ', 401)
+        );
+    }
+
+    // 2) Varification token
+    const decoded: DecodeProtected = await jwt.verify(token, process.env.JWT_SECRET) as DecodeProtected;
+    // 3) Check if user still exits
+
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+        return next(
+            new AppError(
+                'The token belonging to this token does no longer exits',
+                401
+            )
+        );
+    }
+    // 4) Check user change password after token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next(
+            new AppError('User recently changed password ! please login again', 401)
+        );
+    }
+    req.user = currentUser;
+    next();
 })
