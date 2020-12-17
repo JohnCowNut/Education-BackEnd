@@ -1,18 +1,19 @@
 {
-  "name": "ptudw_18127022_18127248",
+  "name": "Course",
   "version": "1.0.0",
   "description": "xay dung ung dung online course",
   "main": "server.js",
   "scripts": {
-    "dev": "tsc & nodemon --exec ts-node ./dist/server.js",
+    "dev": "nodemon  ./dist/server.js",
     "build": "tsc -w"
   },
-  "author": "Trang, Tuan",
+  "author": "COW NUT",
   "license": "ISC",
   "dependencies": {
-    "@shyn123/express-rest": "^0.3.9",
+    "@types/body-parser": "^1.19.0",
     "@types/cors": "^2.8.8",
     "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -31,8 +32,5 @@
     "@types/mongoose": "^5.10.2",
     "@types/morgan": "^1.9.2",
     "@types/node": "^14.14.11"
-  },
-  "_moduleAliases": {
-    "@": "dist"
   }
 }

@@ -6,6 +6,7 @@ import CatchAsync from '../../utils/CatchAsync'
 import { Register, Login } from './Auth.interface';
 import UserModel from './User.model';
 import jwt from 'jsonwebtoken';
+import AppError from '../../utils/AppError';
 class AuthController implements Controller {
     public path = '/user';
     public router = express.Router();
@@ -15,7 +16,7 @@ class AuthController implements Controller {
         this.initializeRoutes();
     }
     public initializeRoutes = () => {
-
+        this.router.post(`${this.path}/login`, this.login)
         this.router.post(`${this.path}/register`, this.register)
     }
     private signToken = (id: string) => {
@@ -54,13 +55,23 @@ class AuthController implements Controller {
             confirmPassword
         })
 
-        this.createSendToken(newUser, status.CREATED, res)
+        return this.createSendToken(newUser, status.CREATED, res)
     })
 
-    private login = async (req: Request, res: Response) => {
+    private login = CatchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { email, password }: Login = req.body;
+        if (!email || !password) {
+            return next(new AppError('Email and password is not empty', +status[400]));
+        }
+        const user = await this.user.findOne({ email }).select('+password');
+        const correct = await user.correctPassword(password, user.password);
+        if (!user || !correct) {
+            return next(new AppError('Incorrect email or password', +status[401]))
+        }
 
-    }
+        return this.createSendToken(user, status.CREATED, res);
+    })
+
 
 }
 

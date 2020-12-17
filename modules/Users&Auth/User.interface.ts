@@ -12,5 +12,5 @@ export interface IUser extends mongoose.Document {
     confirmPassword?: string,
     role?: UserRoles,
     createAt?: Date,
-    correctPassword?(candidatePassword: string): () => Promise<boolean>;
+    correctPassword?(candidatePassword: string, password: string): () => Promise<boolean>;
 }

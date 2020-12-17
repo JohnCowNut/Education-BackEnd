@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import CourseInterface from './Course.interface';
+import CourseInterface from '../types/Course.interface';
 const courseSchema: mongoose.Schema = new mongoose.Schema({
     title: {
         type: String,
