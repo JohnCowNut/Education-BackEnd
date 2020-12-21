@@ -25,9 +25,11 @@ const sendErrorDev = (err: IError, res: Response) => {
     message: err.message,
     stack: err.stack,
   });
+
 };
 const sendErrorProd = (err: any, res: any) => {
   // Operational , trusted error: send message to client
+  console.error("ERROR !!!", err);
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
@@ -35,7 +37,7 @@ const sendErrorProd = (err: any, res: any) => {
     });
     // Programming or other unknown error: don't  leak details
   } else {
-    console.error("ERROR !!!", err);
+
     res.status(500).json({
       status: "error",
       message: "Some thing went very wrong",
@@ -54,14 +56,15 @@ const globalError = (
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
+
+
     if (err.name === "CastError") {
-      error = handleCastErrorDB(error);
+      err = handleCastErrorDB(err);
     }
     if (err.code === 11000) {
-      error = handleDuplicateFieldsDB(err.message);
+      err = handleDuplicateFieldsDB(err.message);
     }
-    sendErrorProd(error, res);
+    sendErrorProd(err, res);
   }
 };
 

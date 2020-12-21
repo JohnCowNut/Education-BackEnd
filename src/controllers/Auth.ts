@@ -1,6 +1,6 @@
 import { DecodeProtected } from "../types/Interfaces/Auth.interface";
 
-import { IUser } from "../types/Interfaces/User.interface";
+import { IUser, userRequest } from "../types/Interfaces/User.interface";
 import { Response, NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/Users";
@@ -25,7 +25,7 @@ const createSendToken = (user: IUser, httpStatus: number, res: Response) => {
   }
   user.password = undefined;
   res.status(httpStatus).json({
-    message: "Register completed",
+    message: "success",
     accessToken: token,
     data: {
       user,
@@ -123,3 +123,20 @@ export const restrictTo = (...roles: string[]) => {
     next();
   };
 };
+
+export const changedPassword = CatchAsync(async (req: Request & userRequest, res: Response, next: NextFunction) => {
+
+  // 1) get User from Database 
+  const user = await User.findById(req.user.id).select('+password');
+  // 2) Check if posted current password is correct
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong ! ', 401));
+  }
+  // 3) If so, update password
+
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  await user.save();
+  // 4) Log user in, send JWT
+  createSendToken(user, 200, res);
+})

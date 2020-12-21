@@ -55,6 +55,11 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     },
   ],
   passwordChangedAt: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
 
 userSchema.pre<IUser>("save", async function (next) {

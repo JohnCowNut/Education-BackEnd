@@ -4,18 +4,19 @@ import morgan from "morgan";
 import Express, { Request, NextFunction } from "express";
 import RouterUser from "./routes/User";
 import RouterCourse from "./routes/Course";
-import RouterCategory from "./routes/Category";
+
 import GlobalError from "./controllers/Error";
 import AppError from "./utils/AppError";
-
+import fs from 'fs'
 const app = Express();
-
+let data2 = JSON.parse(fs.readFileSync(`./data.json`, { encoding: 'utf-8' }))
+console.log(data2.data)
 app.use(bodyParser.json());
 app.use(cors());
 app.use(morgan("tiny"));
 app.use("/api/v1/user", RouterUser);
 app.use("/api/v1/course", RouterCourse);
-app.use("/api/v1/category", RouterCategory);
+
 app.all("*", (req: Request, _, next: NextFunction) => {
   // res.status(404).json({
   //   status: 'fail',

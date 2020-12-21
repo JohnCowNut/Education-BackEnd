@@ -19,12 +19,12 @@ const courseSchema: mongoose.Schema = new mongoose.Schema({
   ],
   price: {
     type: Number,
-
     default: 9.99,
   },
   categories: {
-    type: mongoose.SchemaTypes.ObjectId,
-    ref: "Category",
+    type: String,
+    enum: ['Web Development', 'IOT', 'AI', 'Back-End',],
+    default: 'Web Development'
   },
   createAt: {
     type: Date,

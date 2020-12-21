@@ -1,16 +1,17 @@
-import { protectedAuth } from './../controllers/Auth';
+import { protectedAuth, restrictTo } from './../controllers/Auth';
 
-import { getAllCourses, createCourse, updateCourse } from "../controllers/Course";
+import { getAllCourses, createOneCourse, updateOneCourse, getOneCourse } from "../controllers/Course";
 import express from "express";
 const router = express.Router();
 router
     .route("/")
     .get(getAllCourses)
-    .post(protectedAuth, createCourse)
-    .patch(protectedAuth, updateCourse)
+    .post(protectedAuth, restrictTo('instructors', 'admin'), createOneCourse)
+    .patch(protectedAuth, restrictTo('instructors', 'admin'), updateOneCourse)
+    .delete(protectedAuth, restrictTo('instructors', 'admin'))
 router
     .route("/:id")
-// .get(getCourse)
-// .patch()
+    .get(getOneCourse)
+
 
 export default router;
